@@ -1,0 +1,96 @@
+<!-- TCSS 573: IoT, Jan 28, 2020 -->
+<!-- This code is based on Google's Visualization Gauge code. For more details, go to 
+     https://developers.google.com/chart/interactive/docs/gallery/gauge -->
+<!-- This HTML file  is used to display Google's Gauge charts based on the data 
+	 passed from the Python that reads from the sensor(s). -->
+<!-- if you wish to debug your code online, see an example:
+	 https://jsfiddle.net/api/post/library/pure/ -->
+<html>
+  <head>
+   <!-- import the necessary JavsScript files -->
+   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" ></script>
+   <script type="text/javascript">
+	   <!-- load the guage package -->
+      google.charts.load('current', {'packages':['gauge']});
+      google.charts.setOnLoadCallback(drawChart);
+
+       <!-- begin the function that will be used to draw the chart -->
+      function drawChart() {
+	  <!-- chart specifications for temperature -->
+         var data = google.visualization.arrayToDataTable([
+         ['Label', 'Value'],
+         ['Temperature', {{ temp }}]
+	 ]);
+        <!-- chart specifications for motion guage -->
+	 var data_1 = google.visualization.arrayToDataTable([
+         ['Label', 'Value'],
+	 ['Motion', {{ motion }}]
+	 ]);
+
+         <!-- Range visualization markings for temperature -->
+         var options = 
+         {
+			 width: 300, height: 300,
+			 redFrom: 37, redTo: 45,
+			 greenFrom: 36, greenTo: 37,
+			 yellowFrom: 25, yellowTo: 36,
+			 minorTicks: 5,
+			 min: 0, max: 45
+		 };
+	 
+	 <!-- Range visualization markings for Motion chart -->
+	  var options_1 = 
+         {
+			 width: 300, height: 300,
+			 redFrom: 45, redTo: 75,
+			 greenFrom: 0, greenTo: 15,
+			 yellowFrom: 15, yellowTo: 45,
+			 minorTicks: 5,
+			 min: 0, max: 200
+		 };
+		 
+		 var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+	         var chart1 = new google.visualization.Gauge(document.getElementById('chart1_div'));
+		 chart.draw(data, options);
+	         chart1.draw(data_1, options_1);
+		 
+		 <!-- call this setInterval function to refresh the page (URL) using AJAX -->
+		 <!-- note that we can use alert (...); for debugging in case the output is not shown -->
+		 <!-- properly on the charts -->
+		 <!-- calling getTemp method using AJAX -->
+		  setInterval(function() {
+				var temp = $.ajax({url: '/getTemp', dataType: 'text', async: false}).responseText;
+				//alert(flow);
+				data.setValue(0, 1, temp);
+				chart.draw(data, options);
+			}, 1000);
+		  <!-- Calling buzz method using AJAX-->
+		 
+		  setInterval(function() {
+				var motion = $.ajax({url: '/buzz', dataType: 'text', async: false}).responseText;
+				//alert(flow);
+				data_1.setValue(0, 1, motion);
+				chart1.draw(data_1, options_1);
+			}, 1000);
+				
+
+      }
+    </script>
+  </head>
+  <body>
+	 <!-- define the HTML element that needs binding -->
+	  <table>
+	  <tr>
+	 <td>
+	    <!-- Table row content as temperature guage -->
+	  <div id="chart_div" style="width:300px; height:300px;"></div>
+	  </td>
+	  <td>
+	     <!-- Table row content as motion guage -->
+	     <div id="chart1_div" style="width:300px; height:300px;"></div></td></tr></table>
+   </body>
+</html>
+
